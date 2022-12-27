@@ -1,6 +1,7 @@
 const Product = require('../models/product');
-const Negocio = require('../models/negocio');
 const asyncForEach = require('../utils/async_foreach');
+const constantUtil = require('../utils/constant.util');
+const consultaSql = require('../utils/consultaSql.util');
 const provider = require('../config/provider');
 var Client = require('node-rest-client').Client;
 
@@ -10,32 +11,51 @@ var client = new Client();
 
 module.exports = {
 
-    async findByClasificador(req, res, next) {
+    async findByIdConsulta(req, res, next) {
+        console.log(req.params.id_consulta);
         try {
-            console.log('ya estoy find');
-             console.log(req.params.id_clasificador);
-            var body = {
-                id: req.params.id_clasificador,
-                channel: 'CRvhCDDOjTCKA'
+
+            var sql;
+            switch (req.params.id_consulta) {
+                case constantUtil.DOM_TIPO_CREDITO:
+                   sql = consultaSql.CON_TIPO_CREDITO
+                    break;
+                case constantUtil.DOM_OFICINAS:
+                    sql = consultaSql.CON_OFICINAS
+                    break;
+                case constantUtil.DOM_ESTADO_CREDITO:
+                    sql = consultaSql.CON_ESTADO_CREDITO
+                    break;
+                case constantUtil.DOM_GENERO:
+                    sql = consultaSql.CON_GENERO
+                    break;
+                case constantUtil.DOM_TIPO_MOTIVO_RECHAZO:
+                    sql = consultaSql.CON_TIPO_MOTIVO_RECHAZO
+                    break;
             }
-        
+
+           var body = {
+                dataSql: [
+                   sql
+                ]
+            }
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
-            client.post(provider.ENDPOINT_LISTA_CONCEPTOS, args, function (data, response) {
-                // parsed response body as js object
-                console.log(data);
-                // raw response
 
-                return res.status(201).json(data.rows);
+            client.post(provider.ENDPOINT_LISTA_CONCEPTOS, args, function (data, response) {
+                console.log(data);
+
+
+                return res.status(201).json(data[0].data);
             });        // let axiosPromise = axios.post(provider.ENDPOINT_LISTA_CONCEPTOS, { data: body }); 
         }
         catch (error) {
             console.log(`Error: ${error}`);
             return res.status(501).json({
-                message: `Error al listar los productos por categoria`,
+                message: constantUtil.MENSAJE_ERROR,
                 success: false,
                 error: error
             });
@@ -45,17 +65,17 @@ module.exports = {
     async findByClasificadorPrefijo(req, res, next) {
         try {
 
-             console.log(req.params.id_clasificador);
+            console.log(req.params.id_clasificador);
             var body = {
                 id: req.params.id_clasificador,
                 channel: 'CRvhCDDOjTCKA'
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
+
             client.post(provider.ENDPOINT_LISTA_CONCEPTOS_PREFIJO, args, function (data, response) {
                 // parsed response body as js object
                 console.log(data);
@@ -79,12 +99,12 @@ module.exports = {
             var body = {
                 channel: 'CRvhCDDOjTCKA'
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
+
             client.post(provider.ENDPOINT_LISTA_OFICINA, args, function (data, response) {
                 // parsed response body as js object
                 console.log(data);
@@ -107,15 +127,15 @@ module.exports = {
         try {
             var body = {
                 criterio: ' in(1,5,8,11,18) ',
-                id:1,
+                id: 1,
                 channel: 'CRvhCDDOjTCKA'
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
+
             client.post(provider.ENDPOINT_LISTA_TIPO_PERSONA, args, function (data, response) {
                 // parsed response body as js object
                 console.log(data);
@@ -137,16 +157,16 @@ module.exports = {
     async findByClasificadorGenero(req, res, next) {
         try {
             var body = {
-                criterio:'',
-                id:2,
+                criterio: '',
+                id: 2,
                 channel: 'CRvhCDDOjTCKA'
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
+
             client.post(provider.ENDPOINT_LISTA_TIPO_PERSONA, args, function (data, response) {
                 // parsed response body as js object
                 console.log(data);
@@ -164,26 +184,28 @@ module.exports = {
             });
         }
     },
-    
-    async findByCreditosRechazadoList(req, res, next) {
+
+    async findByCreditosList(req, res, next) {
         try {
+
+            var sql = `select idpcdridsl id, idpcdrfsol fecha_solicitud, trim(idpcdrcrsl) credito_solicitado,  (Select trim(gbcon.gbcondesc) From gbcon Where  gbcon.gbconpfij = 80 and gbcon.gbconabre = trim(idpcdrcrsl)) as desc_credito_solicitado,  trim(idpcdrcdlg || '') agencia,  (select trim(gbofidesc) from gbofi where gbofinofi = idpcdrcdlg) desc_agencia,   trim(idpcdrtper || '') tipo_persona,  trim(idpcdrgene ||'') genero, idpcdrfrec fecha_Rechazo,   idpcdrfini fecha_inicio,   trim(idpcdrmrec ||'') motivo_rechazo,  (select trim(idpcondesc) from idpcon where idpconpref = 9 and idpconcorr = idpcdrmrec) as desc_motivo_rechazo,  trim(idpcdrorec) otro_motivo_rechazo,  trim(idpcdrstat ||'') estado,  (select trim(idpcondesc)  from idpcon where idpconpref = 10 and idpconcorr = idpcdrstat) desc_estado, trim(idpcdruser) usuario from idpcdr where idpcdruser = '${req.params.id_usuario}' and idpcdrstac = 0`;
             var body = {
-                usuario: req.params.usuario,
-                channel: 'CRvhCDDOjTCKA'
+                dataSql: [
+                   sql
+                ]
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
-            client.post(provider.ENDPOINT_LISTA_CREDITO_RECHAZADO, args, function (data, response) {
-                // parsed response body as js object
-                console.log(data);
-                // raw response
+            console.log(args);
+            client.post(provider.ENDPOINT_LISTA_CONCEPTOS, args, function (data, response) {
+                console.log(data[0]);
 
-                return res.status(201).json(data.rows);
-            });        // let axiosPromise = axios.post(provider.ENDPOINT_LISTA_CONCEPTOS, { data: body });
+
+                return res.status(201).json(data[0].data);
+            });     // let axiosPromise = axios.post(provider.ENDPOINT_LISTA_CONCEPTOS, { data: body });
         }
         catch (error) {
             console.log(`Error: ${error}`);
@@ -216,41 +238,40 @@ module.exports = {
 
         try {
             var DATASQL = [];
+
+            const { id, fecha_solicitud, credito_solicitado, agencia, genero,fecha_rechazo, estado_solicitado, motivo_rechazo, otro_motivo_rechazo, usuario } = req.body;
+            const sql_insert = `insert into idpcdr(idpcdridsl, idpcdrfsol, idpcdrstat,idpcdrcrsl,idpcdrcdlg,idpcdrtper, idpcdrgene,idpcdrfrec,idpcdridop,idpcdrfini, idpcdrmrec,idpcdrorec, idpcdrhora,idpcdrfpro, idpcdrorig, idpcdrstac, idpcdruser)VALUES`;
+            const sql_values = `((select max(idpcdridsl)+1 from idpcdr ),'${fecha_solicitud}',${estado_solicitado}, '${credito_solicitado}', ${agencia}, 1, ${genero}, '${fecha_rechazo}',null, null,${motivo_rechazo},'${otro_motivo_rechazo}',current::datetime hour to SECOND , TODAY ,'IDEPRO NET',0,'${usuario}')`;
+
+            DATASQL.push(sql_insert + sql_values);
+            console.log('************************************************');
+
+
+            console.log(sql_insert + sql_values);
+
+            console.log(req.body);
+
+            var body = {
+                dataSql: [
+                    sql_insert + sql_values
+                ]
+            }
+
+            var args = {
+                data: body,
+                headers: { "Content-Type": "application/json" }
+            };
+            client.post(provider.ENDPOINT_LISTA_CONCEPTOS, args, function (data, response) {
+                console.log(data);
+
             
-            const { id, fecha_solicitud,credito_solicitado,agencia,tipo_persona,genero,fecha_rechazo,fecha_inicio, motivo_rechazo, otro_motivo_rechazo,usuario } = req.body;
-           // const sql_insert = `INSERT INTO products( name,description,price,image1,image2,image3,id_category,created_at,updated_at)VALUES`;
-           // const sql_values = `(${fecha_solicitud}, ${fecha_rechazo}, ${fecha_inicio}, ${motivo_rechazo}, ${tipo_persona}, ${genero}, ${otro_motivo_rechazo}) RETURNING id`;
-
-           // DATASQL.push(sql_insert + sql_values);
-           console.log('************************************************');
-           console.log(req.body);
-           var body = {
-            channel: 'CRvhCDDOjTCKA',
-            id:0, 
-            fecha_solicitud: fecha_solicitud,
-            credito_solicitado: credito_solicitado,
-            agencia: agencia,
-            tipo_persona: tipo_persona,
-            genero: genero,
-            estado_solicitado: 1,
-            fecha_rechazo: fecha_rechazo,
-            fecha_inicio: fecha_inicio,
-            motivo_rechazo: motivo_rechazo,
-            otro_motivo_rechazo: otro_motivo_rechazo,
-            usuario: usuario
-        }
-        var args = {
-            data: body,
-            headers: { "Content-Type": "application/json" }
-        };
-        
-        client.post(provider.ENDPOINT_CREAR_CREDITO_RECHAZADO, args, function (data, response) {
-            // parsed response body as js object
-            console.log(data);
-            // raw response
-
-            return res.status(201).json(data);
-        });
+                return res.status(201).json({
+                    message: constantUtil.MENSAJE_CORRECTO,
+                    error: '',
+                    estado: true,
+                    data: {}
+                });
+            });   
 
         } catch (e) {
             console.error(e);
@@ -260,86 +281,33 @@ module.exports = {
                 data: {}
             });
         }
-
-        console.log(`Producto llego vvv`, fecha_rechazo);
-        const files = req.files;
-
-        let inserts = 0;
-
-        if (files.length === 0) {
-            return res.status(501).json({
-                message: 'Error al registrar el producto no tiene imagen',
-                success: false
-            });
-        }
-        else {
-            try {
-
-                const data = await Product.create(product); // ALMACENANDO LA INFORMACION
-                product.id = data.id;
-
-                const start = async () => {
-                    await asyncForEach(files, async (file) => {
-                        const pathImage = `image_${Date.now()}`;
-                        const url = await storage(file, pathImage);
-
-                        if (url !== undefined && url !== null) {
-                            if (inserts == 0) { // IMAGEN 1
-                                product.image1 = url;
-                            }
-                            else if (inserts == 1) { // IMAGEN 2
-                                product.image2 = url;
-                            }
-                            else if (inserts == 2) { // IMAGEN 3
-                                product.image3 = url;
-                            }
-                        }
-
-                        await Product.update(product);
-                        inserts = inserts + 1;
-
-                        if (inserts == files.length) {
-                            return res.status(201).json({
-                                success: true,
-                                message: 'El producto se ha registrado correctamente'
-                            });
-                        }
-
-                    });
-                }
-                start();
-            }
-            catch (error) {
-                console.log(`Error: ${error}`);
-                return res.status(501).json({
-                    message: `Error al registrar el producto ${error}`,
-                    success: false,
-                    error: error
-                });
-            }
-        }
-
     },
 
     async findByCreditosRechazadoDelete(req, res, next) {
         try {
+            var sql = `update idpcdr set idpcdrstac = 9 where idpcdridsl = ${req.params.id_credito}`;
             var body = {
-                id: req.params.id,
-                channel: 'CRvhCDDOjTCKA'
+                dataSql: [
+                   sql
+                ]
             }
-        
+
             var args = {
                 data: body,
                 headers: { "Content-Type": "application/json" }
             };
-            
-            client.post(provider.ENDPOINT_CREAR_CREDITO_RECHAZADO, args, function (data, response) {
-                // parsed response body as js object
-                console.log(data);
-                // raw response
+            console.log(args);
+            client.post(provider.ENDPOINT_LISTA_CONCEPTOS, args, function (data, response) {
+                console.log(data[0]);
 
-                return res.status(201).json(data);
-            });        // let axiosPromise = axios.post(provider.ENDPOINT_LISTA_CONCEPTOS, { data: body });
+
+                return res.status(201).json({
+                    message: constantUtil.MENSAJE_CORRECTO,
+                    error: '',
+                    estado: true,
+                    data: {}
+                });
+            });   // let axiosPromise = axios.post(provider.ENDPOINT_LISTA_CONCEPTOS, { data: body });
         }
         catch (error) {
             console.log(`Error: ${error}`);
@@ -351,3 +319,4 @@ module.exports = {
         }
     },
 }
+

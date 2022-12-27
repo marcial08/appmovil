@@ -3,13 +3,9 @@ const passport = require('passport');
 
 module.exports = (app, upload) => {
 
-    app.get('/negocios/clasificadores/findByClasificador/:id_clasificador', passport.authenticate('jwt', {session: false}), NegociosController.findByClasificador);
-    app.get('/negocios/clasificadores/findByClasificadorPrefijo/:id_clasificador', passport.authenticate('jwt', {session: false}), NegociosController.findByClasificadorPrefijo);
-    app.get('/negocios/clasificadores/findByClasificadorOficina', passport.authenticate('jwt', {session: false}), NegociosController.findByClasificadorOficina);
-    app.get('/negocios/clasificadores/findByClasificadorTipoPersona', passport.authenticate('jwt', {session: false}), NegociosController.findByClasificadorTipoPersona);
-    app.get('/negocios/clasificadores/findByClasificadorGenero', passport.authenticate('jwt', {session: false}), NegociosController.findByClasificadorGenero);
-    app.get('/negocios/creditoRechazado/findByCreditosRechazadoList/:usuario', passport.authenticate('jwt', {session: false}), NegociosController.findByCreditosRechazadoList);
-    app.get('/negocios/creditoRechazado/findByCreditosRechazadoDelete/:id', passport.authenticate('jwt', {session: false}), NegociosController.findByCreditosRechazadoDelete)
-    app.post('/negocios/creditoRechazado/create', passport.authenticate('jwt', {session: false}), NegociosController.create);
+    app.get('/negocio/ideproNetbank/consulta/:id_consulta', passport.authenticate('jwt', {session: false}), NegociosController.findByIdConsulta);
+    app.get('/negocio/ideproNetbank/consulta/list/:id_usuario', passport.authenticate('jwt', {session: false}), NegociosController.findByCreditosList);
+    app.get('/negocio/ideproNetbank/consulta/delete/:id_credito', passport.authenticate('jwt', {session: false}), NegociosController.findByCreditosRechazadoDelete)
+    app.post('/negocio/ideproNetbank/consulta/create', passport.authenticate('jwt', {session: false}), NegociosController.create);
     
 }
