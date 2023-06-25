@@ -188,7 +188,7 @@ module.exports = {
     async findByCreditosList(req, res, next) {
         try {
 
-            var sql = `select idpcdridsl id, idpcdrfsol fecha_solicitud, trim(idpcdrcrsl) credito_solicitado,  (Select trim(gbcon.gbcondesc) From gbcon Where  gbcon.gbconpfij = 80 and gbcon.gbconabre = trim(idpcdrcrsl)) as desc_credito_solicitado,  trim(idpcdrcdlg || '') agencia,  (select trim(gbofidesc) from gbofi where gbofinofi = idpcdrcdlg) desc_agencia,   trim(idpcdrtper || '') tipo_persona,  trim(idpcdrgene ||'') genero, idpcdrfrec fecha_Rechazo,   idpcdrfini fecha_inicio,   trim(idpcdrmrec ||'') motivo_rechazo,  (select trim(idpcondesc) from idpcon where idpconpref = 9 and idpconcorr = idpcdrmrec) as desc_motivo_rechazo,  trim(idpcdrorec) otro_motivo_rechazo,  trim(idpcdrstat ||'') estado,  (select trim(idpcondesc)  from idpcon where idpconpref = 10 and idpconcorr = idpcdrstat) desc_estado, trim(idpcdruser) as usuario, trim(idpcdrnomb) as nombre from idpcdr where idpcdruser = '${req.params.id_usuario}' and idpcdrstac = 0 order by 1 desc`;
+            var sql = `select idpcdridsl id, idpcdrfsol fecha_solicitud, trim(idpcdrcrsl) credito_solicitado,  (Select trim(gbcon.gbcondesc) From gbcon Where  gbcon.gbconpfij = 80 and gbcon.gbconabre = trim(idpcdrcrsl)) as desc_credito_solicitado,  trim(idpcdrcdlg || '') agencia,  (select trim(gbofidesc) from gbofi where gbofinofi = idpcdrcdlg) desc_agencia,   trim(idpcdrtper || '') tipo_persona,  trim(idpcdrgene ||'') genero, idpcdrfrec fecha_Rechazo,   idpcdrfini fecha_inicio,   trim(idpcdrmrec ||'') motivo_rechazo,  (select trim(idpcondesc) from idpcon where idpconpref = 9 and idpconcorr = idpcdrmrec) as desc_motivo_rechazo,  trim(idpcdrorec) otro_motivo_rechazo,  trim(idpcdrstat ||'') estado,  (select trim(idpcondesc)  from idpcon where idpconpref = 10 and idpconcorr = idpcdrstat) desc_estado, trim(idpcdruser) as usuario, trim(idpcdrnomb) as nombre , ci  from idpcdr where idpcdruser = '${req.params.id_usuario}' and idpcdrstac = 0 order by 1 desc`;
             var body = {
                 dataSql: [
                    sql
@@ -237,20 +237,20 @@ module.exports = {
     async create(req, res, next) {
 
         try {
-            const { id, fecha_solicitud, credito_solicitado, agencia, genero,fecha_rechazo, estado_solicitado, motivo_rechazo, otro_motivo_rechazo, usuario,nombre } = req.body;
+            const { id, fecha_solicitud, credito_solicitado, agencia, genero,fecha_rechazo, estado_solicitado, motivo_rechazo, otro_motivo_rechazo, usuario,nombre,ci } = req.body;
             var sql = '';
             var DATASQL = [];
             if(id=='0'){
 
-            const sql_insert = `insert into idpcdr(idpcdridsl, idpcdrfsol, idpcdrstat,idpcdrcrsl,idpcdrcdlg,idpcdrtper, idpcdrgene,idpcdrfrec,idpcdridop,idpcdrfini, idpcdrmrec,idpcdrorec, idpcdrhora,idpcdrfpro, idpcdrorig, idpcdrstac, idpcdruser, idpcdrnomb)VALUES`;
-            const sql_values = `((select max(idpcdridsl)+1 from idpcdr ),'${fecha_solicitud}',${estado_solicitado}, '${credito_solicitado}', ${agencia}, 1, ${genero}, '${fecha_rechazo}',null, null,${motivo_rechazo},'${otro_motivo_rechazo}',current::datetime hour to SECOND , TODAY ,'IDEPRO NET',0,'${usuario}', '${nombre}')`;
+            const sql_insert = `insert into idpcdr(idpcdridsl, idpcdrfsol, idpcdrstat,idpcdrcrsl,idpcdrcdlg,idpcdrtper, idpcdrgene,idpcdrfrec,idpcdridop,idpcdrfini, idpcdrmrec,idpcdrorec, idpcdrhora,idpcdrfpro, idpcdrorig, idpcdrstac, idpcdruser, idpcdrnomb,ci )VALUES`;
+            const sql_values = `((select max(idpcdridsl)+1 from idpcdr ),'${fecha_solicitud}',${estado_solicitado}, '${credito_solicitado}', ${agencia}, 1, ${genero}, '${fecha_rechazo}',null, null,${motivo_rechazo},'${otro_motivo_rechazo}',current::datetime hour to SECOND , TODAY ,'IDEPRO NET',0,'${usuario}', '${nombre}','${ci}')`;
 
             DATASQL.push(sql_insert + sql_values);
             console.log('************************************************');
 
             sql = sql_insert + sql_values
             }else{
-               sql = `update idpcdr set idpcdrfsol = '${fecha_solicitud}', idpcdrstat = ${estado_solicitado},idpcdrcrsl = '${credito_solicitado}',idpcdrcdlg = ${agencia}, idpcdrgene=  ${genero},idpcdrfrec= '${fecha_rechazo}', idpcdrmrec= ${motivo_rechazo},idpcdrorec = '${otro_motivo_rechazo}', idpcdrnomb ='${nombre}' where idpcdridsl = ${id}`;
+               sql = `update idpcdr set idpcdrfsol = '${fecha_solicitud}', idpcdrstat = ${estado_solicitado},idpcdrcrsl = '${credito_solicitado}',idpcdrcdlg = ${agencia}, idpcdrgene=  ${genero},idpcdrfrec= '${fecha_rechazo}', idpcdrmrec= ${motivo_rechazo},idpcdrorec = '${otro_motivo_rechazo}', idpcdrnomb ='${nombre}',ci='${ci}'  where idpcdridsl = ${id}`;
 
             }
 

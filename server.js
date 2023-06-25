@@ -58,9 +58,14 @@ users(app, upload);
 negocios(app, upload);
 
 
-server.listen(3000, '10.0.1.81' || 'localhost', function() {
+//server.listen(3000, '10.0.1.81' || 'localhost', function() {
+//    console.log('Aplicacion de NodeJS ' + port + ' Iniciada...')
+//});
+
+server.listen(app.get("port"));
     console.log('Aplicacion de NodeJS ' + port + ' Iniciada...')
-});
+//});
+
 
 
 // ERROR HANDLER
